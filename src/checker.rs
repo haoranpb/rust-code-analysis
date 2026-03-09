@@ -703,3 +703,65 @@ impl Checker for KotlinCode {
         false
     }
 }
+
+impl Checker for AlCode {
+    fn is_comment(node: &Node) -> bool {
+        node.kind_id() == Al::Comment || node.kind_id() == Al::MultilineComment
+    }
+
+    fn is_useful_comment(_: &Node, _: &[u8]) -> bool {
+        false
+    }
+
+    fn is_func_space(node: &Node) -> bool {
+        matches!(
+            node.kind_id().into(),
+            Al::SourceFile
+                | Al::CodeunitDeclaration
+                | Al::TableDeclaration
+                | Al::PageDeclaration
+                | Al::ReportDeclaration
+                | Al::XmlportDeclaration
+                | Al::QueryDeclaration
+                | Al::EnumDeclaration
+                | Al::InterfaceDeclaration
+                | Al::Procedure
+                | Al::TriggerDeclaration
+                | Al::FieldTriggerDeclaration
+        )
+    }
+
+    fn is_func(node: &Node) -> bool {
+        matches!(
+            node.kind_id().into(),
+            Al::Procedure | Al::TriggerDeclaration | Al::FieldTriggerDeclaration
+        )
+    }
+
+    fn is_closure(_: &Node) -> bool {
+        false
+    }
+
+    fn is_call(node: &Node) -> bool {
+        node.kind_id() == Al::CallExpression
+    }
+
+    fn is_non_arg(node: &Node) -> bool {
+        matches!(
+            node.kind_id().into(),
+            Al::LPAREN | Al::LPAREN2 | Al::COMMA | Al::RPAREN
+        )
+    }
+
+    fn is_string(node: &Node) -> bool {
+        node.kind_id() == Al::StringLiteral
+    }
+
+    fn is_else_if(_: &Node) -> bool {
+        false
+    }
+
+    fn is_primitive(_id: u16) -> bool {
+        false
+    }
+}

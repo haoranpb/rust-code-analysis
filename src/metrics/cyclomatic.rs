@@ -221,7 +221,7 @@ impl Cyclomatic for JavaCode {
     }
 }
 
-implement_metric_trait!(Cyclomatic, KotlinCode, PreprocCode, CcommentCode);
+implement_metric_trait!(Cyclomatic, AlCode, KotlinCode, PreprocCode, CcommentCode);
 
 #[cfg(test)]
 mod tests {

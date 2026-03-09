@@ -355,6 +355,7 @@ pub enum Rust {
     ShorthandFieldIdentifier = 348,
     TypeIdentifier = 349,
     Error = 350,
+    
 }
 
 impl From<Rust> for &'static str {
@@ -712,6 +713,7 @@ impl From<Rust> for &'static str {
             Rust::ShorthandFieldIdentifier => "shorthand_field_identifier",
             Rust::TypeIdentifier => "type_identifier",
             Rust::Error => "ERROR",
+            
         }
     }
 }
@@ -738,3 +740,4 @@ impl PartialEq<Rust> for u16 {
         *x == *self
     }
 }
+

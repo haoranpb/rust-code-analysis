@@ -268,6 +268,7 @@ pub enum Javascript {
     ShorthandPropertyIdentifierPattern = 261,
     StatementIdentifier = 262,
     Error = 263,
+    
 }
 
 impl From<Javascript> for &'static str {
@@ -535,11 +536,10 @@ impl From<Javascript> for &'static str {
             Javascript::FormalParametersRepeat1 => "formal_parameters_repeat1",
             Javascript::PropertyIdentifier => "property_identifier",
             Javascript::ShorthandPropertyIdentifier => "shorthand_property_identifier",
-            Javascript::ShorthandPropertyIdentifierPattern => {
-                "shorthand_property_identifier_pattern"
-            }
+            Javascript::ShorthandPropertyIdentifierPattern => "shorthand_property_identifier_pattern",
             Javascript::StatementIdentifier => "statement_identifier",
             Javascript::Error => "ERROR",
+            
         }
     }
 }
@@ -566,3 +566,4 @@ impl PartialEq<Javascript> for u16 {
         *x == *self
     }
 }
+

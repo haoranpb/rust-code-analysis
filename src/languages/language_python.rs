@@ -280,6 +280,7 @@ pub enum Python {
     AsPatternTarget = 273,
     FormatExpression = 274,
     Error = 275,
+    
 }
 
 impl From<Python> for &'static str {
@@ -562,6 +563,7 @@ impl From<Python> for &'static str {
             Python::AsPatternTarget => "as_pattern_target",
             Python::FormatExpression => "format_expression",
             Python::Error => "ERROR",
+            
         }
     }
 }
@@ -588,3 +590,4 @@ impl PartialEq<Python> for u16 {
         *x == *self
     }
 }
+

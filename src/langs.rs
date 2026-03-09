@@ -18,6 +18,16 @@ mk_langs!(
     // 7) file extensions
     // 8) emacs modes
     (
+        Al,
+        "The `AL` language for Microsoft Dynamics 365 Business Central",
+        "al",
+        AlCode,
+        AlParser,
+        tree_sitter_al,
+        [al],
+        ["al"]
+    ),
+    (
         Mozjs,
         "The `Mozjs` language is variant of the `JavaScript` language",
         "javascript",

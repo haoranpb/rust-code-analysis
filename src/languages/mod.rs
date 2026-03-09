@@ -1,5 +1,8 @@
 #![allow(clippy::enum_variant_names)]
 
+pub mod language_al;
+pub use language_al::*;
+
 pub mod language_ccomment;
 pub use language_ccomment::*;
 
