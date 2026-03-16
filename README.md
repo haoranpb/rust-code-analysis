@@ -14,6 +14,9 @@ called
 <a href="https://tree-sitter.github.io/tree-sitter/" target="_blank">Tree Sitter</a>.
 
 
+This fork adds support for **AL (Business Central)** via
+<a href="https://github.com/SShadowS/tree-sitter-al" target="_blank">tree-sitter-al</a>.
+
 A command line tool called **rust-code-analysis-cli** is provided to interact with the API of the library in an easy way.
 
 This tool can be used to:
