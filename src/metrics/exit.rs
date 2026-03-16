@@ -234,10 +234,10 @@ mod tests {
                     metric.nexits,
                     @r#"
                 {
-                  "sum": 0.0,
-                  "average": null,
+                  "sum": 3.0,
+                  "average": 3.0,
                   "min": 0.0,
-                  "max": 0.0
+                  "max": 3.0
                 }
                 "#
                 );

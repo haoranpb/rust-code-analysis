@@ -244,14 +244,14 @@ mod tests {
                     metric.nom,
                     @r#"
                 {
-                  "functions": 0.0,
+                  "functions": 2.0,
                   "closures": 0.0,
-                  "functions_average": 0.0,
+                  "functions_average": 0.5,
                   "closures_average": 0.0,
-                  "total": 0.0,
-                  "average": 0.0,
+                  "total": 2.0,
+                  "average": 0.5,
                   "functions_min": 0.0,
-                  "functions_max": 0.0,
+                  "functions_max": 1.0,
                   "closures_min": 0.0,
                   "closures_max": 0.0
                 }
@@ -287,14 +287,14 @@ mod tests {
                     metric.nom,
                     @r#"
                 {
-                  "functions": 0.0,
+                  "functions": 3.0,
                   "closures": 0.0,
-                  "functions_average": 0.0,
+                  "functions_average": 0.6,
                   "closures_average": 0.0,
-                  "total": 0.0,
-                  "average": 0.0,
+                  "total": 3.0,
+                  "average": 0.6,
                   "functions_min": 0.0,
-                  "functions_max": 0.0,
+                  "functions_max": 1.0,
                   "closures_min": 0.0,
                   "closures_max": 0.0
                 }

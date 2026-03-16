@@ -267,9 +267,9 @@ mod tests {
                     metric.cyclomatic,
                     @r#"
                 {
-                  "sum": 2.0,
-                  "average": 2.0,
-                  "min": 2.0,
+                  "sum": 5.0,
+                  "average": 1.25,
+                  "min": 1.0,
                   "max": 2.0
                 }
                 "#
@@ -283,13 +283,14 @@ mod tests {
         check_metrics::<AlParser>("codeunit 50000 Test { }", "foo.al", |metric| {
             insta::assert_json_snapshot!(
                 metric.cyclomatic,
-                @r###"
-                {
-                  "sum": 1.0,
-                  "average": 1.0,
-                  "min": 1.0,
-                  "max": 1.0
-                }"###
+                @r#"
+            {
+              "sum": 2.0,
+              "average": 1.0,
+              "min": 1.0,
+              "max": 1.0
+            }
+            "#
             );
         });
     }
@@ -313,9 +314,9 @@ mod tests {
                     metric.cyclomatic,
                     @r#"
                 {
-                  "sum": 2.0,
-                  "average": 2.0,
-                  "min": 2.0,
+                  "sum": 4.0,
+                  "average": 1.3333333333333333,
+                  "min": 1.0,
                   "max": 2.0
                 }
                 "#
@@ -351,9 +352,9 @@ mod tests {
                     metric.cyclomatic,
                     @r#"
                 {
-                  "sum": 4.0,
-                  "average": 4.0,
-                  "min": 4.0,
+                  "sum": 6.0,
+                  "average": 2.0,
+                  "min": 1.0,
                   "max": 4.0
                 }
                 "#
@@ -386,10 +387,10 @@ mod tests {
                     metric.cyclomatic,
                     @r#"
                 {
-                  "sum": 1.0,
-                  "average": 1.0,
+                  "sum": 6.0,
+                  "average": 2.0,
                   "min": 1.0,
-                  "max": 1.0
+                  "max": 4.0
                 }
                 "#
                 );

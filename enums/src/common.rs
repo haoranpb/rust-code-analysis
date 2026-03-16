@@ -23,6 +23,10 @@ pub fn sanitize_identifier(name: &str) -> String {
     if name == "Self" {
         return "SELF".to_string();
     }
+    // Prefix bare digit names to produce valid Rust identifiers
+    if name.starts_with(|c: char| c.is_ascii_digit()) {
+        return format!("N{name}");
+    }
 
     let mut result = String::with_capacity(name.len());
     for c in name.chars() {
