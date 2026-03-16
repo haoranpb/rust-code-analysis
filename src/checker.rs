@@ -728,13 +728,21 @@ impl Checker for AlCode {
                 | Al::Procedure
                 | Al::TriggerDeclaration
                 | Al::FieldTriggerDeclaration
+                | Al::OnrunTrigger
+                | Al::NamedTrigger
+                | Al::FileuploadactionTrigger
         )
     }
 
     fn is_func(node: &Node) -> bool {
         matches!(
             node.kind_id().into(),
-            Al::Procedure | Al::TriggerDeclaration | Al::FieldTriggerDeclaration
+            Al::Procedure
+                | Al::TriggerDeclaration
+                | Al::FieldTriggerDeclaration
+                | Al::OnrunTrigger
+                | Al::NamedTrigger
+                | Al::FileuploadactionTrigger
         )
     }
 

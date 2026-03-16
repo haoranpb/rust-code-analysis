@@ -251,6 +251,28 @@ mod tests {
     use super::*;
 
     #[test]
+    fn al_no_functions_nargs() {
+        check_metrics::<AlParser>("codeunit 50000 Test { }", "foo.al", |metric| {
+            insta::assert_json_snapshot!(
+                metric.nargs,
+                @r###"
+                {
+                  "total_functions": 0.0,
+                  "total_closures": 0.0,
+                  "average_functions": 0.0,
+                  "average_closures": 0.0,
+                  "total": 0.0,
+                  "average": 0.0,
+                  "functions_min": 0.0,
+                  "functions_max": 0.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }"###
+            );
+        });
+    }
+
+    #[test]
     fn python_no_functions_and_closures() {
         check_metrics::<PythonParser>("a = 42", "foo.py", |metric| {
             // 0 functions + 0 closures

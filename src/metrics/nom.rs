@@ -224,6 +224,87 @@ mod tests {
     use super::*;
 
     #[test]
+    fn al_nom() {
+        check_metrics::<AlParser>(
+            "codeunit 50100 MyCodeunit
+{
+    procedure Add(a: Integer; b: Integer): Integer
+    begin
+        exit(a + b);
+    end;
+
+    procedure Greet(name: Text)
+    begin
+        Message('Hello ' + name);
+    end;
+}",
+            "foo.al",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nom,
+                    @r#"
+                {
+                  "functions": 0.0,
+                  "closures": 0.0,
+                  "functions_average": 0.0,
+                  "closures_average": 0.0,
+                  "total": 0.0,
+                  "average": 0.0,
+                  "functions_min": 0.0,
+                  "functions_max": 0.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn al_triggers_and_procedures() {
+        check_metrics::<AlParser>(
+            "codeunit 50100 Test
+{
+    trigger OnRun()
+    begin
+        DoWork();
+    end;
+
+    procedure DoWork()
+    begin
+        Message('Working');
+    end;
+
+    procedure Helper(): Boolean
+    begin
+        exit(true);
+    end;
+}",
+            "foo.al",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nom,
+                    @r#"
+                {
+                  "functions": 0.0,
+                  "closures": 0.0,
+                  "functions_average": 0.0,
+                  "closures_average": 0.0,
+                  "total": 0.0,
+                  "average": 0.0,
+                  "functions_min": 0.0,
+                  "functions_max": 0.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
     fn python_nom() {
         check_metrics::<PythonParser>(
             "def a():

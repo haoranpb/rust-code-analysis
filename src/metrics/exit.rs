@@ -182,13 +182,68 @@ impl Exit for JavaCode {
     }
 }
 
-implement_metric_trait!(Exit, AlCode, KotlinCode, PreprocCode, CcommentCode);
+implement_metric_trait!(Exit, KotlinCode, PreprocCode, CcommentCode);
+
+impl Exit for AlCode {
+    fn compute(node: &Node, stats: &mut Stats) {
+        if matches!(node.kind_id().into(), Al::ExitStatement) {
+            stats.exit += 1;
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use crate::tools::check_metrics;
 
     use super::*;
+
+    #[test]
+    fn al_no_exit() {
+        check_metrics::<AlParser>("codeunit 50000 Test { }", "foo.al", |metric| {
+            insta::assert_json_snapshot!(
+                metric.nexits,
+                @r###"
+                {
+                  "sum": 0.0,
+                  "average": null,
+                  "min": 0.0,
+                  "max": 0.0
+                }"###
+            );
+        });
+    }
+
+    #[test]
+    fn al_multiple_exits() {
+        check_metrics::<AlParser>(
+            "codeunit 50100 Test
+{
+    procedure FindValue(key: Text): Integer
+    begin
+        if key = 'A' then
+            exit(1);
+        if key = 'B' then
+            exit(2);
+        exit(0);
+    end;
+}",
+            "foo.al",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": null,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
 
     #[test]
     fn python_no_exit() {

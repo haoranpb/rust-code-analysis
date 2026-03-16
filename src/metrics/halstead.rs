@@ -328,13 +328,61 @@ impl Halstead for JavaCode {
     }
 }
 
-implement_metric_trait!(Halstead, AlCode, KotlinCode, PreprocCode, CcommentCode);
+implement_metric_trait!(Halstead, KotlinCode, PreprocCode, CcommentCode);
+
+impl Halstead for AlCode {
+    fn compute<'a>(node: &Node<'a>, code: &'a [u8], halstead_maps: &mut HalsteadMaps<'a>) {
+        compute_halstead::<Self>(node, code, halstead_maps);
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use crate::tools::check_metrics;
 
     use super::*;
+
+    #[test]
+    fn al_operators_and_operands() {
+        check_metrics::<AlParser>(
+            "codeunit 50100 Test
+{
+    procedure Calc(a: Integer; b: Integer): Integer
+    var
+        result: Integer;
+    begin
+        result := a + b;
+        if result > 100 then
+            result := result - 50;
+        exit(result);
+    end;
+}",
+            "foo.al",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 4.0,
+                  "N1": 10.0,
+                  "n2": 5.0,
+                  "N2": 12.0,
+                  "length": 22.0,
+                  "estimated_program_length": 19.60964047443681,
+                  "purity_ratio": 0.8913472942925822,
+                  "vocabulary": 9.0,
+                  "volume": 69.73835003173087,
+                  "difficulty": 4.8,
+                  "level": 0.20833333333333334,
+                  "effort": 334.7440801523082,
+                  "time": 18.5968933417949,
+                  "bugs": 0.016070177814507126
+                }
+                "#
+                );
+            },
+        );
+    }
 
     #[test]
     fn python_operators_and_operands() {

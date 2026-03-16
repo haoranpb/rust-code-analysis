@@ -221,13 +221,181 @@ impl Cyclomatic for JavaCode {
     }
 }
 
-implement_metric_trait!(Cyclomatic, AlCode, KotlinCode, PreprocCode, CcommentCode);
+implement_metric_trait!(Cyclomatic, KotlinCode, PreprocCode, CcommentCode);
+
+impl Cyclomatic for AlCode {
+    fn compute(node: &Node, stats: &mut Stats) {
+        use Al::*;
+
+        match node.kind_id().into() {
+            IfStatement | ForStatement | ForeachStatement | WhileStatement | RepeatStatement
+            | CaseBranch | And | Or => {
+                stats.cyclomatic += 1.;
+            }
+            _ => {}
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use crate::tools::check_metrics;
 
     use super::*;
+
+    #[test]
+    fn al_codeunit_cyclomatic() {
+        check_metrics::<AlParser>(
+            "codeunit 50100 MyCodeunit
+{
+    procedure Add(a: Integer; b: Integer): Integer
+    begin
+        exit(a + b);
+    end;
+
+    procedure Greet(name: Text)
+    begin
+        if name = '' then
+            Message('Hello World')
+        else
+            Message('Hello ' + name);
+    end;
+}",
+            "foo.al",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r#"
+                {
+                  "sum": 2.0,
+                  "average": 2.0,
+                  "min": 2.0,
+                  "max": 2.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn al_no_functions() {
+        check_metrics::<AlParser>("codeunit 50000 Test { }", "foo.al", |metric| {
+            insta::assert_json_snapshot!(
+                metric.cyclomatic,
+                @r###"
+                {
+                  "sum": 1.0,
+                  "average": 1.0,
+                  "min": 1.0,
+                  "max": 1.0
+                }"###
+            );
+        });
+    }
+
+    #[test]
+    fn al_procedure_with_if_else() {
+        check_metrics::<AlParser>(
+            "codeunit 50100 Test
+{
+    procedure Greet(name: Text): Text
+    begin
+        if name = '' then
+            exit('Hello World')
+        else
+            exit('Hello ' + name);
+    end;
+}",
+            "foo.al",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r#"
+                {
+                  "sum": 2.0,
+                  "average": 2.0,
+                  "min": 2.0,
+                  "max": 2.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn al_nested_control_flow() {
+        check_metrics::<AlParser>(
+            "codeunit 50100 Test
+{
+    procedure ProcessEntries(count: Integer)
+    var
+        i: Integer;
+        total: Integer;
+    begin
+        i := 0;
+        total := 0;
+        repeat
+            i := i + 1;
+            if i mod 2 = 0 then
+                total := total + i;
+        until i >= count;
+        if total > 100 then
+            Message('Large total');
+    end;
+}",
+            "foo.al",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r#"
+                {
+                  "sum": 4.0,
+                  "average": 4.0,
+                  "min": 4.0,
+                  "max": 4.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn al_case_statement() {
+        check_metrics::<AlParser>(
+            "codeunit 50100 Test
+{
+    procedure GetDocPageNo(docType: Integer): Integer
+    begin
+        case docType of
+            1:
+                exit(10);
+            2:
+                exit(20);
+            3:
+                exit(30);
+        end;
+        exit(0);
+    end;
+}",
+            "foo.al",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r#"
+                {
+                  "sum": 1.0,
+                  "average": 1.0,
+                  "min": 1.0,
+                  "max": 1.0
+                }
+                "#
+                );
+            },
+        );
+    }
 
     #[test]
     fn python_simple_function() {

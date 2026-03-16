@@ -353,9 +353,43 @@ implement_metric_trait!(
     CppCode,
     PreprocCode,
     CcommentCode,
-    KotlinCode,
-    AlCode
+    KotlinCode
 );
+
+impl Abc for AlCode {
+    fn compute(node: &Node, stats: &mut Stats) {
+        use Al::*;
+
+        match node.kind_id().into() {
+            // Assignments: := operator
+            COLONEQ => {
+                stats.assignments += 1.;
+            }
+            // Branches: procedure/function calls
+            CallExpression => {
+                stats.branches += 1.;
+            }
+            // Conditions: comparison operators
+            LTEQ | GTEQ | LTGT => {
+                stats.conditions += 1.;
+            }
+            // EQ, LT, GT can appear outside comparisons (e.g., property definitions),
+            // so only count them when used as actual comparison operators
+            EQ | LT | GT => {
+                if let Some(parent) = node.parent()
+                    && matches!(parent.kind_id().into(), ComparisonExpression)
+                {
+                    stats.conditions += 1.;
+                }
+            }
+            // Logical operators used in conditions
+            And | Or | Xor | Not => {
+                stats.conditions += 1.;
+            }
+            _ => {}
+        }
+    }
+}
 
 // Fitzpatrick, Jerry (1997). "Applying the ABC metric to C, C++ and Java". C++ Report.
 // Source: https://www.softwarerenovation.com/Articles.aspx

@@ -857,13 +857,183 @@ impl Loc for JavaCode {
     }
 }
 
-implement_metric_trait!(Loc, AlCode, PreprocCode, CcommentCode, KotlinCode);
+implement_metric_trait!(Loc, PreprocCode, CcommentCode, KotlinCode);
+
+impl Loc for AlCode {
+    fn compute(node: &Node, stats: &mut Stats, is_func_space: bool, is_unit: bool) {
+        use Al::*;
+
+        let (start, end) = init(node, stats, is_func_space, is_unit);
+
+        match node.kind_id().into() {
+            SourceFile => {}
+            Comment | MultilineComment => {
+                add_cloc_lines(stats, start, end);
+            }
+            AssignmentStatement | ExitStatement | IfStatement | WhileStatement | ForStatement
+            | ForeachStatement | RepeatStatement | CaseStatement | WithStatement
+            | AsserterrorStatement | ContinueStatement | VariableDeclaration => {
+                stats.lloc.logical_lines += 1;
+            }
+            _ => {
+                check_comment_ends_on_code_line(stats, start);
+                stats.ploc.lines.insert(start);
+            }
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use crate::tools::check_metrics;
 
     use super::*;
+
+    #[test]
+    fn al_simple_procedure() {
+        check_metrics::<AlParser>(
+            "codeunit 50000 Test
+{
+    procedure HelloWorld()
+    begin
+        Message('Hello');
+    end;
+}",
+            "foo.al",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 8.0,
+                  "ploc": 6.0,
+                  "lloc": 1.0,
+                  "cloc": 0.0,
+                  "blank": 2.0,
+                  "sloc_average": 8.0,
+                  "ploc_average": 6.0,
+                  "lloc_average": 1.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 2.0,
+                  "sloc_min": 8.0,
+                  "sloc_max": 8.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 6.0,
+                  "ploc_max": 6.0,
+                  "lloc_min": 1.0,
+                  "lloc_max": 1.0,
+                  "blank_min": 2.0,
+                  "blank_max": 2.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn al_codeunit_loc() {
+        check_metrics::<AlParser>(
+            "codeunit 50100 MyCodeunit
+{
+    // This is a comment
+    /* Multi-line
+       comment */
+
+    procedure Add(a: Integer; b: Integer): Integer
+    begin
+        exit(a + b);
+    end;
+
+    procedure Greet(name: Text)
+    begin
+        if name = '' then
+            Message('Hello World')
+        else
+            Message('Hello ' + name);
+    end;
+}",
+            "foo.al",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 20.0,
+                  "ploc": 13.0,
+                  "lloc": 2.0,
+                  "cloc": 0.0,
+                  "blank": 7.0,
+                  "sloc_average": 20.0,
+                  "ploc_average": 13.0,
+                  "lloc_average": 2.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 7.0,
+                  "sloc_min": 20.0,
+                  "sloc_max": 20.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 13.0,
+                  "ploc_max": 13.0,
+                  "lloc_min": 2.0,
+                  "lloc_max": 2.0,
+                  "blank_min": 7.0,
+                  "blank_max": 7.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn al_comments_and_code() {
+        check_metrics::<AlParser>(
+            "// Line comment
+codeunit 50100 Test
+{
+    /* Block comment
+       spanning lines */
+    procedure DoWork()
+    var
+        x: Integer;
+    begin
+        x := 42;
+    end;
+}",
+            "foo.al",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 13.0,
+                  "ploc": 10.0,
+                  "lloc": 1.0,
+                  "cloc": 0.0,
+                  "blank": 3.0,
+                  "sloc_average": 13.0,
+                  "ploc_average": 10.0,
+                  "lloc_average": 1.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 3.0,
+                  "sloc_min": 13.0,
+                  "sloc_max": 13.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 10.0,
+                  "ploc_max": 10.0,
+                  "lloc_min": 1.0,
+                  "lloc_max": 1.0,
+                  "blank_min": 3.0,
+                  "blank_max": 3.0
+                }
+                "#
+                );
+            },
+        );
+    }
 
     #[test]
     fn python_sloc() {

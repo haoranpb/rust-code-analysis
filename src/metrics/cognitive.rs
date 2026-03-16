@@ -490,13 +490,149 @@ impl Cognitive for JavaCode {
     }
 }
 
-implement_metric_trait!(Cognitive, AlCode, PreprocCode, CcommentCode, KotlinCode);
+implement_metric_trait!(Cognitive, PreprocCode, CcommentCode, KotlinCode);
+
+impl Cognitive for AlCode {
+    fn compute(
+        node: &Node,
+        stats: &mut Stats,
+        nesting_map: &mut HashMap<usize, (usize, usize, usize)>,
+    ) {
+        use Al::*;
+
+        let (mut nesting, depth, lambda) = get_nesting_from_map(node, nesting_map);
+
+        match node.kind_id().into() {
+            IfStatement => {
+                increase_nesting(stats, &mut nesting, depth, lambda);
+            }
+            ForStatement | ForeachStatement | WhileStatement | RepeatStatement | CaseStatement => {
+                increase_nesting(stats, &mut nesting, depth, lambda);
+            }
+            LogicalExpression => {
+                compute_booleans::<language_al::Al>(node, stats, And, Or);
+            }
+            _ => {}
+        }
+        nesting_map.insert(node.id(), (nesting, depth, lambda));
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use crate::tools::check_metrics;
 
     use super::*;
+
+    #[test]
+    fn al_codeunit_cognitive() {
+        check_metrics::<AlParser>(
+            "codeunit 50100 MyCodeunit
+{
+    procedure Greet(name: Text)
+    begin
+        if name = '' then
+            Message('Hello World')
+        else
+            Message('Hello ' + name);
+    end;
+}",
+            "foo.al",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.cognitive,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": null,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn al_no_cognitive() {
+        check_metrics::<AlParser>("codeunit 50000 Test { }", "foo.al", |metric| {
+            insta::assert_json_snapshot!(
+                metric.cognitive,
+                @r###"
+                {
+                  "sum": 0.0,
+                  "average": null,
+                  "min": 0.0,
+                  "max": 0.0
+                }"###
+            );
+        });
+    }
+
+    #[test]
+    fn al_nested_if() {
+        check_metrics::<AlParser>(
+            "codeunit 50100 Test
+{
+    procedure Validate(a: Integer; b: Integer): Boolean
+    begin
+        if a > 0 then
+            if b > 0 then
+                exit(true);
+        exit(false);
+    end;
+}",
+            "foo.al",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.cognitive,
+                    @r#"
+                {
+                  "sum": 2.0,
+                  "average": null,
+                  "min": 2.0,
+                  "max": 2.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn al_loop_with_condition() {
+        check_metrics::<AlParser>(
+            "codeunit 50100 Test
+{
+    procedure SumPositive(count: Integer): Integer
+    var
+        i: Integer;
+        total: Integer;
+    begin
+        total := 0;
+        for i := 1 to count do
+            if i > 0 then
+                total := total + i;
+        exit(total);
+    end;
+}",
+            "foo.al",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.cognitive,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": null,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
 
     #[test]
     fn python_no_cognitive() {

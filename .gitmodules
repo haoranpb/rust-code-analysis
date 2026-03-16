@@ -10,3 +10,7 @@
 [submodule "tests/repositories/serde"]
 	path = tests/repositories/serde
 	url = https://github.com/serde-rs/serde
+[submodule "tree-sitter-al"]
+	path = tree-sitter-al
+	url = https://github.com/SShadowS/tree-sitter-al.git
+	branch = main

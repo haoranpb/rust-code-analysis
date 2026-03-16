@@ -577,4 +577,52 @@ impl Getter for JavaCode {
 
 impl Getter for KotlinCode {}
 
-impl Getter for AlCode {}
+impl Getter for AlCode {
+    fn get_space_kind(node: &Node) -> SpaceKind {
+        use Al::*;
+
+        match node.kind_id().into() {
+            SourceFile => SpaceKind::Unit,
+            Procedure | TriggerDeclaration | FieldTriggerDeclaration | OnrunTrigger
+            | NamedTrigger | FileuploadactionTrigger => SpaceKind::Function,
+            CodeunitDeclaration | TableDeclaration | PageDeclaration | ReportDeclaration
+            | XmlportDeclaration | QueryDeclaration | EnumDeclaration => SpaceKind::Class,
+            InterfaceDeclaration => SpaceKind::Interface,
+            _ => SpaceKind::Unknown,
+        }
+    }
+
+    fn get_op_type(node: &Node) -> HalsteadType {
+        use Al::*;
+
+        match node.kind_id().into() {
+            // Operators: control flow keywords
+            IfStatement | ForStatement | ForeachStatement | WhileStatement | RepeatStatement
+            | CaseStatement | WithStatement => HalsteadType::Operator,
+            // Operators: assignment
+            COLONEQ => HalsteadType::Operator,
+            // Operators: arithmetic
+            PLUS | DASH | STAR | SLASH => HalsteadType::Operator,
+            // Operators: comparison
+            EQ | LT | GT | LTEQ | GTEQ | LTGT => HalsteadType::Operator,
+            // Operators: logical
+            And | Or | Not | Xor => HalsteadType::Operator,
+            // Operators: separators
+            SEMI | COMMA | DOT | LPAREN | LBRACE | DOTDOT => HalsteadType::Operator,
+            // Operands: identifiers and literals
+            Identifier | QuotedIdentifier => HalsteadType::Operand,
+            StringLiteral | LiteralValue | DurationString | TimeLiteral | DatetimeLiteral
+            | DateLiteral => HalsteadType::Operand,
+            _ => HalsteadType::Unknown,
+        }
+    }
+
+    fn get_operator_id_as_str(id: u16) -> &'static str {
+        let typ: Al = id.into();
+        match typ {
+            Al::LPAREN => "()",
+            Al::LBRACE => "{}",
+            _ => typ.into(),
+        }
+    }
+}
